@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:math';
+
 import 'package:flutter/material.dart';
 
 /// Abstract base class for text animations.
@@ -111,6 +112,8 @@ class AnimatedTextKit extends StatefulWidget {
   /// By default it is set to 3
   final int totalRepeatCount;
 
+  final void Function()? controllerListener;
+
   const AnimatedTextKit({
     Key? key,
     required this.animatedTexts,
@@ -124,6 +127,7 @@ class AnimatedTextKit extends StatefulWidget {
     this.isRepeatingAnimation = true,
     this.totalRepeatCount = 3,
     this.repeatForever = false,
+    this.controllerListener,
   })  : assert(animatedTexts.length > 0),
         assert(!isRepeatingAnimation || totalRepeatCount > 0 || repeatForever),
         assert(null == onFinished || !repeatForever),
@@ -158,6 +162,9 @@ class _AnimatedTextKitState extends State<AnimatedTextKit>
   void dispose() {
     _timer?.cancel();
     _controller.dispose();
+    if (widget.controllerListener != null) {
+      _controller.removeListener(widget.controllerListener!);
+    }
     super.dispose();
   }
 
@@ -224,6 +231,10 @@ class _AnimatedTextKitState extends State<AnimatedTextKit>
     _controller
       ..addStatusListener(_animationEndCallback)
       ..forward();
+
+    if (widget.controllerListener != null) {
+      _controller.addListener(widget.controllerListener!);
+    }
   }
 
   void _setPause() {
